@@ -1,176 +1,131 @@
-"use client";
-
-import { useState } from 'react';
-import Chat from '@/components/Chat';
-import MarketBoard from '@/components/MarketBoard';
-import AgriTips from '@/components/AgriTips';
-import AgriTutorChat from '@/components/AgriTutorChat';
-import SurplusFinder from '@/components/SurplusFinder';
-import { Menu } from 'lucide-react';
-
-type Tab = 'chat' | 'market' | 'agri' | 'surplus';
-
-const navItems: { id: Tab; emoji: string; label: string }[] = [
-  { id: 'chat',    emoji: '💬', label: 'Mjadala (Chat)' },
-  { id: 'market',  emoji: '📊', label: 'Bei za Soko' },
-  { id: 'agri',    emoji: '🎓', label: 'Agri-Tutor' },
-  { id: 'surplus', emoji: '🚛', label: 'Surplus Zones' },
-];
+import Link from "next/link";
 
 export default function Home() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>('chat');
-
-  const handleNav = (tab: Tab) => {
-    setActiveTab(tab);
-    setIsSidebarOpen(false);
-  };
-
-  const tabLabel: Record<Tab, string> = {
-    chat:    'Mjadala — National Chat',
-    market:  'Bei za Soko — Market Prices',
-    agri:    'Agri-Tutor — Agricultural Education',
-    surplus: 'Surplus Zones — Find Excess Supply',
-  };
-
   return (
-    <div className="flex h-screen bg-[#F8F9FA] overflow-hidden">
-      {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-[#2D5A27] text-white flex flex-col p-6 shadow-xl
-        transition-transform duration-300 lg:relative lg:translate-x-0
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-[#F27D26] rounded-lg flex items-center justify-center text-xl font-bold text-white">
-            F
+    <div className="min-h-screen bg-[#F8F9FA]">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#F27D26] rounded-lg flex items-center justify-center text-xl font-bold text-white">
+              F
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-gray-800">FarmiPal</h1>
           </div>
-          <h1 className="text-xl font-bold tracking-tight">FarmiPal</h1>
+          <nav className="hidden md:flex items-center gap-6">
+            <a href="#features" className="text-sm text-gray-600 hover:text-[#2D5A27] transition-colors">
+              Features
+            </a>
+            <a href="#about" className="text-sm text-gray-600 hover:text-[#2D5A27] transition-colors">
+              About
+            </a>
+          </nav>
         </div>
+      </header>
 
-        <nav className="flex-1 space-y-2">
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => handleNav(item.id)}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors text-left ${
-                activeTab === item.id
-                  ? 'bg-white/20 text-white font-semibold'
-                  : 'hover:bg-white/5 text-white/80 hover:text-white'
-              }`}
-            >
-              <span className={`text-lg ${activeTab === item.id ? 'opacity-100' : 'opacity-70'}`}>
-                {item.emoji}
-              </span>
-              <span className="font-medium">{item.label}</span>
-              {activeTab === item.id && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#F27D26]" />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        <div className="mt-auto p-4 bg-black/10 rounded-xl border border-white/10 shrink-0">
-          <p className="text-[10px] text-white/60 mb-1 uppercase tracking-wider">Hali ya Hewa: Nairobi</p>
-          <p className="text-lg font-semibold flex items-center gap-2">
-            24°C <span className="text-xl">🌤️</span>
+      <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+        <div className="text-center space-y-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
+            Your AI-Powered
+            <span className="text-[#2D5A27]"> Farming Assistant</span>
+          </h2>
+          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Diagnose crop diseases, access market insights, detect surplus risks, and get real-time farming guidance.
           </p>
-          <p className="text-[10px] text-white/40 mt-2 italic">Active: Kenya National</p>
-        </div>
-      </aside>
-
-      {/* Main Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-white border-b border-gray-200 px-6 lg:px-8 flex items-center justify-between shadow-sm shrink-0">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            <Link
+              href="/diagnose"
+              className="bg-[#2D5A27] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#1E3F1A] transition-colors shadow-md"
             >
-              <Menu size={20} />
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-semibold text-gray-500 hidden sm:inline">
-                {tabLabel[activeTab]}
-              </span>
+              Diagnose Crop Disease
+            </Link>
+            <Link
+              href="/chat"
+              className="bg-white text-[#2D5A27] border-2 border-[#2D5A27] px-8 py-3 rounded-lg font-semibold hover:bg-[#2D5A27]/5 transition-colors"
+            >
+              Chat with FarmiPal
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="max-w-6xl mx-auto px-6 py-16">
+        <h3 className="text-3xl font-bold text-center text-gray-800 mb-12">Core Features</h3>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl mb-4">
+              📸
             </div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Image Diagnosis</h4>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Take a photo of your crop and get an AI-powered diagnosis with actionable treatment steps.
+            </p>
+            <Link href="/diagnose" className="inline-block mt-4 text-[#2D5A27] font-semibold text-sm hover:underline">
+              Try it now →
+            </Link>
           </div>
 
-          <div className="flex gap-4 items-center">
-            <button className="px-4 py-1.5 border border-[#2D5A27] text-[#2D5A27] rounded-md text-sm font-bold hover:bg-[#2D5A27]/5 transition-colors hidden sm:block">
-              Msaada wa Haraka
-            </button>
-            <div className="w-9 h-9 rounded-full bg-gray-200 border-2 border-white shadow-sm flex items-center justify-center text-[10px] font-bold text-gray-600">
-              USER
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl mb-4">
+              💬
             </div>
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Smart Chat</h4>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Ask farming questions — pest control, soil health, irrigation — get answers grounded in local knowledge.
+            </p>
+            <Link href="/chat" className="inline-block mt-4 text-[#2D5A27] font-semibold text-sm hover:underline">
+              Start chatting →
+            </Link>
           </div>
-        </header>
 
-        <main className="flex-1 p-4 lg:p-6 overflow-hidden">
-
-          {/* Chat Tab */}
-          {activeTab === 'chat' && (
-            <div className="h-full grid grid-cols-12 gap-6">
-              <section className="col-span-12 lg:col-span-7 h-full flex flex-col overflow-hidden">
-                <Chat />
-              </section>
-              <section className="hidden lg:flex lg:col-span-5 flex-col gap-6 overflow-y-auto no-scrollbar pb-6">
-                <MarketBoard />
-                <AgriTips />
-              </section>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl mb-4">
+              📊
             </div>
-          )}
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Market Trends</h4>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              See price trends across markets and get plain-language guidance on when and where to sell.
+            </p>
+            <Link href="/market" className="inline-block mt-4 text-[#2D5A27] font-semibold text-sm hover:underline">
+              View prices →
+            </Link>
+          </div>
 
-          {/* Market Tab */}
-          {activeTab === 'market' && (
-            <div className="h-full overflow-y-auto no-scrollbar">
-              <div className="max-w-2xl mx-auto">
-                <MarketBoard />
-              </div>
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-2xl mb-4">
+              🌍
             </div>
-          )}
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Surplus Insights</h4>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Detect regional oversupply risks before prices collapse. Get alternatives — sell early, store, or process.
+            </p>
+            <Link href="/surplus" className="inline-block mt-4 text-[#2D5A27] font-semibold text-sm hover:underline">
+              Check risk →
+            </Link>
+          </div>
+        </div>
+      </section>
 
-          {/* Agri-Tutor Tab */}
-          {activeTab === 'agri' && (
-            <div className="h-full grid grid-cols-12 gap-6">
-              <section className="col-span-12 lg:col-span-7 h-full flex flex-col overflow-hidden">
-                <AgriTutorChat />
-              </section>
-              <section className="hidden lg:flex lg:col-span-5 flex-col gap-6 overflow-y-auto no-scrollbar pb-6">
-                <SurplusFinder />
-                <AgriTips />
-              </section>
-            </div>
-          )}
+      <section id="about" className="bg-white border-t border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-16">
+          <div className="max-w-3xl mx-auto text-center space-y-4">
+            <h3 className="text-3xl font-bold text-gray-800">Built for Farmers, Powered by AI</h3>
+            <p className="text-gray-600 leading-relaxed">
+              FarmiPal uses a layered architecture — Next.js for a fast, mobile-first UI and Django for AI orchestration,
+              data persistence, and async job handling. All AI logic is decoupled and GPU-ready.
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              Our mock-first development means the entire UI is complete and testable before any AI model is running.
+            </p>
+          </div>
+        </div>
+      </section>
 
-          {/* Surplus Tab */}
-          {activeTab === 'surplus' && (
-            <div className="h-full overflow-y-auto no-scrollbar">
-              <div className="max-w-2xl mx-auto space-y-6 pb-10">
-                <SurplusFinder />
-                <div className="p-5 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                  <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span className="text-lg">📢</span> Surplus Information
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Data hii huonyesha maeneo ambapo mavuno ni mengi kuliko mahitaji. Hii ni nafasi nzuri kwa wafanyabiashara kupata bidhaa kwa bei nafuu, na kwa wakulima kutafuta soko mbadala au kuanza kukausha mazao ili yasiharibike.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </main>
-      </div>
-
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      <footer className="bg-gray-800 text-white py-8">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-sm text-gray-400">FarmiPal — Built for farmers, powered by AI. 🌾</p>
+          <p className="text-xs text-gray-500 mt-2">MIT License</p>
+        </div>
+      </footer>
     </div>
   );
 }

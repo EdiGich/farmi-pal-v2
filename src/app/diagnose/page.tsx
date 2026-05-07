@@ -1,18 +1,33 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+
+interface DiagnosisResponse {
+  label: string;
+  label_key?: string;
+  severity?: "mild" | "moderate" | "severe" | "unknown";
+  confidence?: number;
+  explanation?: string;
+  steps?: string[];
+  watch_for?: string;
+  model_version?: string;
+}
 
 export default function DiagnosePage() {
   const [file, setFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [preview, setPreview] = useState<string | null>(null);
   const [cropType, setCropType] = useState("maize");
   const [language, setLanguage] = useState("en");
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<DiagnosisResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] || null;
     setFile(selected);
+    setImageUrl(""); // Clear URL if file is selected
     if (selected) {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result as string);
@@ -22,21 +37,42 @@ export default function DiagnosePage() {
     }
   };
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setImageUrl(url);
+    setFile(null); // Clear file if URL is entered
+    setPreview(url || null);
+  };
+
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file && !imageUrl) return;
     setLoading(true);
     setResult(null);
 
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("crop_type", cropType);
-    formData.append("language", language);
-
     try {
-      const res = await fetch("/api/diagnose", {
-        method: "POST",
-        body: formData,
-      });
+      let res;
+      if (file) {
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("crop_type", cropType);
+        formData.append("language", language);
+        res = await fetch("/api/diagnose", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        res = await fetch("/api/diagnose", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            crop_type: cropType,
+            language: language,
+          }),
+        });
+      }
 
       const data = await res.json();
       setResult(data);
@@ -51,15 +87,16 @@ export default function DiagnosePage() {
     mild: "bg-green-100 text-green-800 border-green-200",
     moderate: "bg-yellow-100 text-yellow-800 border-yellow-200",
     severe: "bg-red-100 text-red-800 border-red-200",
+    unknown: "bg-gray-100 text-gray-800 border-gray-200",
   };
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <a href="/" className="text-sm text-gray-500 hover:text-[#2D5A27] transition-colors">
+          <Link href="/" className="text-sm text-gray-500 hover:text-[#2D5A27] transition-colors">
             ← Back to Home
-          </a>
+          </Link>
           <h1 className="text-xl font-bold text-gray-800">Crop Diagnosis</h1>
         </div>
       </header>
@@ -96,25 +133,59 @@ export default function DiagnosePage() {
             </div>
           </div>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#2D5A27] file:text-white hover:file:bg-[#1E3F1A] file:cursor-pointer"
-          />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Option 1: Upload Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#2D5A27] file:text-white hover:file:bg-[#1E3F1A] file:cursor-pointer"
+              />
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500 uppercase">Or</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Option 2: Image URL</label>
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={handleUrlChange}
+                placeholder="https://example.com/image.jpg"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-[#2D5A27] focus:border-[#2D5A27]"
+              />
+            </div>
+          </div>
 
           {preview && (
             <div className="mt-4">
-              <img src={preview} alt="Preview" className="max-h-64 rounded-xl border border-gray-200" />
+              <img 
+                src={preview} 
+                alt="Preview" 
+                className="max-h-64 rounded-xl border border-gray-200"
+                onError={() => {
+                  if (imageUrl) {
+                    console.error("Failed to load image from URL");
+                  }
+                }}
+              />
             </div>
           )}
 
           <button
             onClick={handleUpload}
-            disabled={!file || loading}
-            className="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={(!file && !imageUrl) || loading}
+            className="mt-6 w-full bg-[#2D5A27] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#1E3F1A] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
-            {loading ? "Analyzing..." : "Analyze"}
+            {loading ? "Analyzing..." : "Analyze Crop"}
           </button>
         </div>
 
@@ -129,7 +200,7 @@ export default function DiagnosePage() {
               </div>
               {result.severity && (
                 <span
-                  className={`text-xs font-semibold px-3 py-1 rounded-full border ${severityColors[result.severity] || "bg-gray-100 text-gray-800 border-gray-200"}`}
+                  className={`text-xs font-semibold px-3 py-1 rounded-full border ${severityColors[result.severity] || severityColors.unknown}`}
                 >
                   {result.severity.charAt(0).toUpperCase() + result.severity.slice(1)}
                 </span>
@@ -150,7 +221,7 @@ export default function DiagnosePage() {
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-800 mb-2">Action Steps (Next 48 Hours):</h3>
                 <ol className="list-decimal list-inside space-y-1 text-gray-700">
-                  {result.steps.map((step: string, i: number) => (
+                  {result.steps.map((step, i) => (
                     <li key={i}>{step}</li>
                   ))}
                 </ol>

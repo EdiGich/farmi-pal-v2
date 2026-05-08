@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @require_http_methods(["POST"])
+def health(request):
+    return JsonResponse({"status": "ok"})
 def chat_view(request):
     try:
         body = json.loads(request.body) if request.body else {}

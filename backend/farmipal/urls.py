@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from farmipal_chat.views import health
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -23,4 +24,5 @@ urlpatterns = [
     path('api/', include('farmipal_chat.urls')),
     path('api/', include('farmipal_market.urls')),
     path('api/', include('surplus.urls')),
+    path("api/health/", health, name="health"),
 ]

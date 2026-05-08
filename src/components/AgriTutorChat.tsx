@@ -84,10 +84,15 @@ export default function AgriTutorChat() {
           systemInstruction: AGRI_SYSTEM_INSTRUCTION,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'model', text: data.text }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'model', text: 'Ai, kuna shida kidogo. Jaribu tena.' }]);
+      setMessages(prev => [...prev, { role: 'model', text: 'Ai, kuna shida kidogo. Jaribu tena. (Sorry, something went wrong. Please try again.)' }]);
     } finally {
       setIsLoading(false);
     }

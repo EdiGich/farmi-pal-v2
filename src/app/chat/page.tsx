@@ -18,6 +18,11 @@ interface ChatResponse {
   language: string;
 }
 
+const ERROR_MESSAGES: Record<string, string> = {
+  en: "Sorry, something went wrong. Please try again.",
+  sw: "Samahani, tatizo limetokea. Tafadhali jaribu tena.",
+};
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -55,6 +60,11 @@ export default function ChatPage() {
           language,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
       const data: ChatResponse = await res.json();
 
       const assistantMessage: Message = {
@@ -68,7 +78,7 @@ export default function ChatPage() {
         ...prev,
         {
           role: "assistant",
-          content: "Ai, kuna shida kidogo. Jaribu tena.",
+          content: ERROR_MESSAGES[language],
           timestamp: new Date().toISOString(),
         },
       ]);

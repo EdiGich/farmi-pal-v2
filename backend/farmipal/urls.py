@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('farmipal_diagnosis.urls')),
     path('api/', include('farmipal_chat.urls')),
+    path('api/', include('farmipal_market.urls')),
+    path('api/', include('surplus.urls')),
 ]

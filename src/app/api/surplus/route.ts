@@ -1,48 +1,41 @@
+function sanitizeDjangoError(body: Record<string, unknown>): string {
+  const err = (body?.error as string) || "";
+  const detail = (body?.detail as string) || "";
+  const combined = (err + " " + detail).toLowerCase();
+
+  if (
+    combined.includes("connection") ||
+    combined.includes("timeout") ||
+    combined.includes("max retries") ||
+    combined.includes("connecttimeout") ||
+    combined.includes("econnrefused")
+  ) {
+    return "FarmiPal is currently unable to connect to the AI model. Please ensure the backend server is running and try again.";
+  }
+
+  return err || "An unexpected error occurred. Please try again.";
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export async function POST(req: Request) {
-  return Response.json({
-    crop: "maize",
-    region: "Nakuru",
-    risk_score: 70,
-    risk_level: "high",
-    risk_reasons: [
-      "peak_harvest_month",
-      "high_rainfall_good_yield",
-      "price_already_falling",
-      "4_counties_harvesting_simultaneously",
-    ],
-    weather_summary: {
-      forecast_rainfall_14d_mm: 142,
-      anomaly_pct: 22,
-      outlook: "Wetter than average — yields expected above normal across region",
-    },
-    narrative:
-      "Kwa sababu ya mvua nyingi na mavuno mazuri katika kaunti nyingi, bei inatarajiwa kushuka zaidi wiki zijazo. Fikiria kuuza mapema au kuhifadhi mazao yako.",
-    alternatives: [
-      {
-        type: "sell_early",
-        label: "Uza ndani ya wiki 2",
-        rationale: "Kabla soko halijajaa",
-        action: "Wasiliana na wafanyabiashara wa Eldoret sasa hivi.",
-      },
-      {
-        type: "store",
-        label: "Hifadhi ghalani iliyoidhinishwa",
-        rationale: "Subiri bei ipande baada ya wiki 8-10",
-        action: "Ghala la karibu: NCPB Nakuru, km 12.",
-      },
-      {
-        type: "process",
-        label: "Saga unga",
-        rationale: "Ongeza thamani ~40%, epuka soko la malighafi",
-        action: "Vikundi vya kusaga vipo katika eneo lako.",
-      },
-    ],
-    best_alternative_market: {
-      name: "Eldoret",
-      price_premium_pct: 8,
-      distance_km: 90,
-      saturation_risk: "low",
-    },
-    generated_at: "2025-05-05T10:30:00Z",
-  });
+  try {
+    const body = await req.json();
+    const djangoRes = await fetch(`${API_URL}/api/surplus/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!djangoRes.ok) {
+      const errBody = await djangoRes.json().catch(() => ({}));
+      return Response.json({ error: sanitizeDjangoError(errBody) }, { status: 503 });
+    }
+    return Response.json(await djangoRes.json());
+  } catch {
+    return Response.json(
+      { error: "FarmiPal is currently unable to connect to the AI model. Please ensure the backend server is running and try again." },
+      { status: 503 }
+    );
+  }
 }

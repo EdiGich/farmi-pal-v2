@@ -11,6 +11,8 @@ interface Message {
   text: string;
 }
 
+const ERROR_MESSAGE = "Ai, kuna shida kidogo. Jaribu tena. (Sorry, something went wrong. Please try again.)";
+
 export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -31,14 +33,19 @@ export default function Chat() {
     setInput('');
     setIsLoading(true);
 
-    const history = messages.map(m => ({
-      role: m.role,
-      parts: [{ text: m.text }]
-    }));
+    try {
+      const history = messages.map(m => ({
+        role: m.role,
+        parts: [{ text: m.text }]
+      }));
 
-    const response = await chatWithFarmiPal(input, history);
-    setMessages(prev => [...prev, { role: 'model', text: response }]);
-    setIsLoading(false);
+      const response = await chatWithFarmiPal(input, history);
+      setMessages(prev => [...prev, { role: 'model', text: response }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'model', text: ERROR_MESSAGE }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

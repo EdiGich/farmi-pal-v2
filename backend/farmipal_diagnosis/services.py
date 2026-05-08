@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import re
 import time
 from io import BytesIO
@@ -7,6 +8,8 @@ from pathlib import Path
 
 import requests as req
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 from .constants import (
     CHAT_ENDPOINT,
@@ -63,6 +66,9 @@ def extract_json_from_response(raw_text: str) -> dict:
     )
 
 
+MAX_IMAGE_SIZE = (1024, 1024)
+
+
 def load_image_from_url(url: str, save_path: Path | None = None) -> tuple[Image.Image, str]:
     headers = {"User-Agent": "Mozilla/5.0 (FarmiPal diagnosis bot)"}
     r = req.get(url, headers=headers, timeout=15)
@@ -73,12 +79,13 @@ def load_image_from_url(url: str, save_path: Path | None = None) -> tuple[Image.
         raise ValueError(f"URL did not return an image (Content-Type: {content_type})")
 
     img = Image.open(BytesIO(r.content)).convert("RGB")
+    img.thumbnail(MAX_IMAGE_SIZE)
 
     if save_path:
         img.save(save_path)
 
     buffer = BytesIO()
-    img.save(buffer, format="JPEG", quality=90)
+    img.save(buffer, format="JPEG", quality=80)
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     data_uri = f"data:image/jpeg;base64,{b64}"
@@ -88,9 +95,10 @@ def load_image_from_url(url: str, save_path: Path | None = None) -> tuple[Image.
 def load_image_from_file(file_path: str | Path) -> tuple[Image.Image, str]:
     file_path = Path(file_path)
     img = Image.open(file_path).convert("RGB")
+    img.thumbnail(MAX_IMAGE_SIZE)
 
     buffer = BytesIO()
-    img.save(buffer, format="JPEG", quality=90)
+    img.save(buffer, format="JPEG", quality=80)
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     data_uri = f"data:image/jpeg;base64,{b64}"
@@ -99,9 +107,10 @@ def load_image_from_file(file_path: str | Path) -> tuple[Image.Image, str]:
 
 def load_image_from_bytes(raw_bytes: bytes) -> tuple[Image.Image, str]:
     img = Image.open(BytesIO(raw_bytes)).convert("RGB")
+    img.thumbnail(MAX_IMAGE_SIZE)
 
     buffer = BytesIO()
-    img.save(buffer, format="JPEG", quality=90)
+    img.save(buffer, format="JPEG", quality=80)
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     data_uri = f"data:image/jpeg;base64,{b64}"

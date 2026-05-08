@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'farmipal_diagnosis',
     'farmipal_chat',
+    'farmipal_market',
+    'surplus',
 ]
 
 MIDDLEWARE = [

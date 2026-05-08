@@ -25,9 +25,22 @@ interface AnalyticsData {
   generated_at: string;
 }
 
+interface EnsoData {
+  phase: string;
+  oni_value: number;
+  trend: string;
+  interpretation: string;
+}
+
+interface TriggeredFactor {
+  rule: string;
+  reason: string;
+}
+
 interface SurplusResult {
   risk_score: number;
-  risk_level: "low" | "medium" | "high";
+  risk_level: "low" | "medium" | "high" | "critical";
+  confidence?: string;
   risk_reasons: string[];
   narrative: string;
   weather_summary: {
@@ -35,6 +48,8 @@ interface SurplusResult {
     anomaly_pct: number;
     outlook: string;
   };
+  enso_data?: EnsoData;
+  season?: string;
   alternatives: {
     type: string;
     label: string;
@@ -47,6 +62,7 @@ interface SurplusResult {
     distance_km: number;
     saturation_risk: string;
   };
+  triggered_factors?: TriggeredFactor[];
 }
 
 export default function SurplusPage() {
@@ -68,7 +84,10 @@ export default function SurplusPage() {
 
   useEffect(() => {
     fetch("/api/surplus/analytics")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch analytics");
+        return res.json();
+      })
       .then((data) => {
         setAnalytics(data);
         setAnalyticsLoading(false);
@@ -115,6 +134,12 @@ export default function SurplusPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server responded with ${res.status}`);
+      }
+
       const json = await res.json();
       setResult(json);
     } catch {
@@ -200,11 +225,15 @@ export default function SurplusPage() {
             <SurplusRiskCard
               risk_score={result.risk_score}
               risk_level={result.risk_level}
+              confidence={result.confidence}
               risk_reasons={result.risk_reasons}
               narrative={result.narrative}
               weather_summary={result.weather_summary}
+              enso_data={result.enso_data}
+              season={result.season}
               alternatives={result.alternatives}
               best_alternative_market={result.best_alternative_market}
+              triggered_factors={result.triggered_factors}
             />
           </div>
         )}

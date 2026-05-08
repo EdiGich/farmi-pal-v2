@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 interface DiagnosisResponse {
   label: string;
@@ -23,11 +22,13 @@ export default function DiagnosePage() {
   const [language, setLanguage] = useState("en");
   const [result, setResult] = useState<DiagnosisResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] || null;
     setFile(selected);
-    setImageUrl(""); // Clear URL if file is selected
+    setImageUrl("");
+    setError(null);
     if (selected) {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result as string);
@@ -40,14 +41,16 @@ export default function DiagnosePage() {
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     setImageUrl(url);
-    setFile(null); // Clear file if URL is entered
+    setFile(null);
     setPreview(url || null);
+    setError(null);
   };
 
   const handleUpload = async () => {
     if (!file && !imageUrl) return;
     setLoading(true);
     setResult(null);
+    setError(null);
 
     try {
       let res;
@@ -74,13 +77,22 @@ export default function DiagnosePage() {
         });
       }
 
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server responded with ${res.status}`);
+      }
+
       const data = await res.json();
       setResult(data);
     } catch (error) {
-      console.error("Upload error:", error);
+      setError(error instanceof Error ? error.message : "Failed to analyze image. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRetry = () => {
+    handleUpload();
   };
 
   const severityColors: Record<string, string> = {
@@ -173,7 +185,7 @@ export default function DiagnosePage() {
                 className="max-h-64 rounded-xl border border-gray-200"
                 onError={() => {
                   if (imageUrl) {
-                    console.error("Failed to load image from URL");
+                    setError("Failed to load image from URL. Check the URL and try again.");
                   }
                 }}
               />
@@ -188,6 +200,18 @@ export default function DiagnosePage() {
             {loading ? "Analyzing..." : "Analyze Crop"}
           </button>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+            <p className="text-red-600 font-medium text-sm">{error}</p>
+            <button
+              onClick={handleRetry}
+              className="mt-3 bg-[#2D5A27] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#1E3F1A] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
 
         {result && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">

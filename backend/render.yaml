@@ -11,8 +11,6 @@ services:
         value: false
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: VLLM_BASE_URL
-        value: http://129.212.182.12:8000
       - key: VISION_MODEL
         value: Qwen/Qwen2-VL-7B-Instruct
       - key: VISION_MAX_TOKENS

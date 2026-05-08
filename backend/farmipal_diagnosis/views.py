@@ -5,7 +5,6 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .constants import MODEL_ID, VLLM_BASE_URL
 from .services import diagnose
 
 logger = logging.getLogger(__name__)
@@ -18,12 +17,7 @@ CONFIDENCE_MAP = {
 
 
 def health_view(request):
-    """Health check — returns vLLM endpoint status without hitting it."""
-    return JsonResponse({
-        "status": "ok",
-        "vllm_endpoint": VLLM_BASE_URL,
-        "model": MODEL_ID,
-    })
+    return JsonResponse({"status": "ok"})
 
 
 @csrf_exempt

@@ -17,7 +17,7 @@
 /.next/
 /out/
 .next/
-
+/mediumpost.md
 .env
 __pycache__/
 *.pyc

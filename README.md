@@ -1,4 +1,4 @@
-# 🌱 FarmiPal
+# FarmiPal
 
 > An AI-powered agricultural assistant designed to help farmers diagnose crop diseases, access market insights, detect surplus risks, and get real-time guidance — built with a modern, scalable full-stack architecture.
 

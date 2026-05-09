@@ -125,7 +125,7 @@ export default function CheckYourCropForm({
             Analyzing...
           </>
         ) : (
-          <>Check My Risk \u2192</>
+          <>Check My Risk</>
         )}
       </button>
     </div>
